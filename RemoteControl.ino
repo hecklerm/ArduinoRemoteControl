@@ -21,7 +21,7 @@
  */
 
 // Set up sensors
-Mdht11 DHT11;
+dht11 DHT11;
 Adafruit_INA219 ina219;
 
 // And now the variables for capturing sensor values
@@ -39,6 +39,7 @@ int powerPin = 12;        // Assign "for real" when relay is connected
 boolean isAutonomous = true;
 boolean isLightOn = false;
 boolean isPowerOn = false;
+int powerOnSeconds = 0;
 
 void setup(void)
 {
@@ -93,7 +94,7 @@ void loop(void)
   //msg.toCharArray(out_msg, msg.length()+1);
   Serial.println(msg);
 
-  if (loadVoltage > 2 && loadVoltage < 12.19) {
+  if (loadVoltage > 2 && loadVoltage < 12.19 && powerOnSeconds > 60) {
     // If V < 11.8V, battery is drained. TESTING! :-)
     lightOff();
     powerOff();
@@ -121,15 +122,20 @@ void loop(void)
     }
     
     if (isAutonomous) {
-      // 
-      if (DHT11.temperature <= 0) {
-        // For now, if it's cold enough to turn on heat, shut off light.
-        powerOn();
-        lightOff();
-      } else if (DHT11.temperature > 2) {
-        // When the heat goes off, turn on "ready" light.
+      if (DHT11.temperature >= 2) {
+        // When the heat is off, turn on "ready" light.
         powerOff();
         lightOn();
+      } else {
+        if (loadVoltage > 13.00) {
+          // For now, if it's cold enough to turn on heat, shut off light.
+          // If V too low, though, it can't sustain the heater power draw.
+          powerOn();
+          lightOff();
+        } else {
+          powerOff();
+          lightOn();
+        }
       }
     }
   }
@@ -159,6 +165,7 @@ void powerOn() {
     digitalWrite(powerPin, HIGH);
     isPowerOn = true;
   }
+  powerOnSeconds++;  // increment power on counter
 }
 
 void powerOff() {
@@ -167,6 +174,7 @@ void powerOff() {
     digitalWrite(powerPin, LOW);
     isPowerOn = false;
   }
+  powerOnSeconds = 0;  // reset counter for time power is on
 }
 
 void actOnInput(int inByte) {
