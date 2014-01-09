@@ -122,19 +122,23 @@ void loop(void)
     }
     
     if (isAutonomous) {
-      if (DHT11.temperature >= 2) {
+      if (DHT11.temperature > 1) {
         // When the heat is off, turn on "ready" light.
         powerOff();
         lightOn();
       } else {
-        if (loadVoltage > 13.00) {
+        if (loadVoltage > 12.45) {
           // For now, if it's cold enough to turn on heat, shut off light.
           // If V too low, though, it can't sustain the heater power draw.
           powerOn();
           lightOff();
         } else {
-          powerOff();
-          lightOn();
+          if (powerOnSeconds > 60) {
+            powerOff();
+            lightOn();
+          } else {
+            powerOnSeconds++;
+          }
         }
       }
     }
