@@ -94,7 +94,7 @@ void loop(void)
   //msg.toCharArray(out_msg, msg.length()+1);
   Serial.println(msg);
 
-  if (loadVoltage > 2 && loadVoltage < 12.19 && powerOnSeconds > 60) {
+  if (loadVoltage > 2 && loadVoltage < 12.36 && powerOnSeconds > 60) {
     // If V < 11.8V, battery is drained. TESTING! :-)
     lightOff();
     powerOff();
@@ -127,7 +127,7 @@ void loop(void)
         powerOff();
         lightOn();
       } else {
-        if (loadVoltage > 12.45) {
+        if (loadVoltage > 12.57) {
           // For now, if it's cold enough to turn on heat, shut off light.
           // If V too low, though, it can't sustain the heater power draw.
           powerOn();
