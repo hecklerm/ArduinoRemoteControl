@@ -120,8 +120,8 @@ void loop(void)
     }
     
     if (isAutonomous) {
-      if (DHT11.temperature > 1 && DHT11.temperature < 90) {
-        // Temperature is within desired range...
+      if (DHT11.temperature > 1 && DHT11.temperature < 32) {
+        // Temperature is within desired range...(Celsius)
         // Extinguish power (heat/fan), ignite "ready" light.
         powerOff();
         lightOn();
