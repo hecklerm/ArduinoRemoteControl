@@ -1,9 +1,9 @@
 /*
  * Read from temp/humidity and current/voltage sensors and send data to
- * receiver module (Arduino + nRF24L01+).
+ * receiver module over serial connection).
  *
  *
- * Copyright (C) 2013 Mark A. Heckler (@MkHeck, mark.heckler@gmail.com)
+ * Copyright (C) 2014 Mark A. Heckler (@MkHeck, mark.heckler@gmail.com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -90,8 +90,6 @@ void loop(void)
   Serial.println("");
   */
 
-  //char out_msg[msg.length()+1];
-  //msg.toCharArray(out_msg, msg.length()+1);
   Serial.println(msg);
 
   if (loadVoltage > 2 && loadVoltage < 12.36 && powerOnSeconds > 60) {
@@ -122,13 +120,15 @@ void loop(void)
     }
     
     if (isAutonomous) {
-      if (DHT11.temperature > 1) {
-        // When the heat is off, turn on "ready" light.
+      if (DHT11.temperature > 1 && DHT11.temperature < 90) {
+        // Temperature is within desired range...
+        // Extinguish power (heat/fan), ignite "ready" light.
         powerOff();
         lightOn();
       } else {
         if (loadVoltage > 12.57) {
-          // For now, if it's cold enough to turn on heat, shut off light.
+          // Temperature is out of desired range...
+          // Engage heat/fan (depending upon season) and extinguish light.
           // If V too low, though, it can't sustain the heater power draw.
           powerOn();
           lightOff();
