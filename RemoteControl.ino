@@ -40,6 +40,7 @@ boolean isAutonomous = true;
 boolean isLightOn = false;
 boolean isPowerOn = false;
 int powerOnSeconds = 0;
+int status = 0;
 
 void setup(void)
 {
@@ -71,6 +72,23 @@ void loop(void)
   current_mA = ina219.getCurrent_mA();
   loadVoltage = busVoltage + (shuntVoltage / 1000);
   
+  status = 0;
+  if (isAutonomous) {
+    status += 2000;
+  } else {
+    status += 1000;
+  }
+  if (isPowerOn) {
+    status += 200;
+  } else {
+    status += 100;
+  }
+  if (isLightOn) {
+    status += 20;
+  } else {
+    status += 10;
+  }
+
   // Build the message to transmit
   msg = "{";
   msg += DHT11.humidity * 100;
@@ -80,6 +98,8 @@ void loop(void)
   msg += int(loadVoltage * 1000);
   msg += ",";
   msg += int(current_mA);
+  msg += ",";
+  msg += status;
   msg += "}";
 
   /*
@@ -120,11 +140,17 @@ void loop(void)
     }
     
     if (isAutonomous) {
-      if (DHT11.temperature > 1 && DHT11.temperature < 32) {
+      if (DHT11.temperature > 1 && DHT11.temperature < 31) {
         // Temperature is within desired range...(Celsius)
         // Extinguish power (heat/fan), ignite "ready" light.
-        powerOff();
-        lightOn();
+        if (powerOnSeconds > 60) {
+            powerOff();
+            lightOn();
+          } else {
+            powerOnSeconds++;
+          }
+        //powerOff();
+        //lightOn();
       } else {
         if (loadVoltage > 12.57) {
           // Temperature is out of desired range...
