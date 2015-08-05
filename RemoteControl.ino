@@ -3,7 +3,7 @@
  * receiver module over serial connection).
  *
  *
- * Copyright (C) 2014 Mark A. Heckler (@MkHeck, mark.heckler@gmail.com)
+ * Copyright (C) 2014, 2015 Mark A. Heckler (@MkHeck, mark.heckler@gmail.com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,8 +34,10 @@ String msg;
 
 // State & other variables
 int inByte;
-int lightPin = 5;         // LED pin
-int powerPin = 12;        // Assign "for real" when relay is connected
+const int POWER_PIN = 4;          // Assign "for real" when relay is connected
+const int RELAY_1_RED = 5;
+const int RELAY_1_BLK = 6;
+const int LIGHT_PIN = 13;         // LED pin
 boolean isAutonomous = true;
 boolean isLightOn = false;
 boolean isPowerOn = false;
@@ -51,9 +53,11 @@ void setup(void)
   /*
    * Initialize pin(s)
    */
-   pinMode(lightPin, OUTPUT);
-   pinMode(powerPin, OUTPUT);
-  
+   pinMode(LIGHT_PIN, OUTPUT);
+   pinMode(POWER_PIN, OUTPUT);
+   pinMode(RELAY_1_RED, OUTPUT);
+   pinMode(RELAY_1_BLK, OUTPUT);
+
   /*
    * Initialize temp/humidity sensor
    */
@@ -131,6 +135,15 @@ void loop(void)
         // Disable automatic power/light management
         isAutonomous = false;
         break;
+      case 'O': // Temp entry for testing actuator(s) OPEN
+        extendActuator();
+        break;
+      case 'C': // Temp entry for testing actuator(s) CLOSE
+        retractActuator();
+        break;
+      case 'S': // Temp entry for testing actuator(s) STOP
+        stopActuator();
+        break;
       default:
         if (!isAutonomous) {  // Only act on inputs if isAutonomous is overridden
           actOnInput(inByte);
@@ -176,7 +189,7 @@ void loop(void)
 void lightOn() {
   // Turn on light (if not on already)
   if (!isLightOn) {
-    digitalWrite(lightPin, HIGH);
+    digitalWrite(LIGHT_PIN, HIGH);
     isLightOn = true;
   }
 }
@@ -184,7 +197,7 @@ void lightOn() {
 void lightOff() {
   // Turn off light (if on)
   if (isLightOn) {
-    digitalWrite(lightPin, LOW);
+    digitalWrite(LIGHT_PIN, LOW);
     isLightOn = false;
   }
 }
@@ -192,7 +205,7 @@ void lightOff() {
 void powerOn() {
   // Turn on power (if not on already)
   if (!isPowerOn) {
-    digitalWrite(powerPin, HIGH);
+    digitalWrite(POWER_PIN, HIGH);
     isPowerOn = true;
   }
   powerOnSeconds++;  // increment power on counter
@@ -201,7 +214,7 @@ void powerOn() {
 void powerOff() {
   // Turn off power (if on)
   if (isPowerOn) {
-    digitalWrite(powerPin, LOW);
+    digitalWrite(POWER_PIN, LOW);
     isPowerOn = false;
   }
   powerOnSeconds = 0;  // reset counter for time power is on
@@ -223,3 +236,22 @@ void actOnInput(int inByte) {
     break;
   }    
 }
+
+
+void extendActuator() {
+  Serial.println("EXTEND");
+  digitalWrite(RELAY_1_BLK, LOW);
+  digitalWrite(RELAY_1_RED, HIGH);
+}
+
+void retractActuator() { 
+  Serial.println("RETRACT");
+  digitalWrite(RELAY_1_RED, LOW);
+  digitalWrite(RELAY_1_BLK, HIGH); 
+}
+
+void stopActuator() {
+   digitalWrite(RELAY_1_RED, LOW);
+   digitalWrite(RELAY_1_BLK, LOW); 
+ }
+ 
